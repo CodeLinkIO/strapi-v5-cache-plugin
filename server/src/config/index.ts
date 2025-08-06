@@ -1,0 +1,89 @@
+import * as crypto from 'crypto';
+
+export default {
+  default: ({ env }) => ({
+    debug: false,
+    max: 1000,
+    ttl: 1000 * 60 * 60,
+    size: 1024 * 1014 * 10,
+    allowStale: false,
+    cacheableRoutes: [],
+    provider: 'memory',
+    redisConfig: env('REDIS_URL'),
+    redisClusterNodes: [],
+    redisClusterOptions: {},
+    cacheHeaders: true,
+    cacheAuthorizedRequests: false,
+    cacheGetTimeoutInMs: 1000,
+    hashCacheKey: undefined,
+    initCacheTimeoutInMs: 10000,
+    auth: 'after',
+  }),
+  validator: (config) => {
+    if (typeof config.debug !== 'boolean') {
+      throw new Error(`Invalid config: debug must be a boolean`);
+    }
+    if (typeof config.max !== 'number') {
+      throw new Error(`Invalid config: max must be a number`);
+    }
+    if (typeof config.ttl !== 'number') {
+      throw new Error(`Invalid config: ttl must be a number`);
+    }
+    if (typeof config.size !== 'number') {
+      throw new Error(`Invalid config: size must be a number`);
+    }
+    if (typeof config.allowStale !== 'boolean') {
+      throw new Error(`Invalid config: allowStale must be a boolean`);
+    }
+    if (
+      !Array.isArray(config.cacheableRoutes) ||
+      config.cacheableRoutes.some((item) => typeof item !== 'string')
+    ) {
+      throw new Error(`Invalid config: cacheableRoutes must be an string array`);
+    }
+    if (typeof config.provider !== 'string') {
+      throw new Error(`Invalid config: provider must be a string`);
+    }
+    if (config.provider !== 'memory' && config.provider !== 'redis') {
+      throw new Error(`Invalid config: provider must be 'memory' or 'redis'`);
+    }
+    if (config.provider === 'redis') {
+      if (!config.redisConfig &&
+      (typeof config.redisConfig !== 'string' || typeof config.redisConfig !== 'object')) {
+        throw new Error(`Invalid config: redisConfig must be set when using redis provider`);
+      }
+      if (!Array.isArray(config.redisClusterNodes) ||
+        config.redisClusterNodes.some((item) =>
+          !('host' in item && 'port' in item))) {
+        throw new Error(`Invalid config: redisClusterNodes must be as a list of objects with keys 'host' and 'port'`);
+      }
+      if (typeof config.redisClusterOptions !== 'object') {
+        throw new Error(`Invalid config: redisClusterOptions must be an object`);
+      }
+    }
+    if (typeof config.cacheHeaders !== 'boolean') {
+      throw new Error(`Invalid config: cacheHeaders must be a boolean`);
+    }
+    if (typeof config.cacheAuthorizedRequests !== 'boolean') {
+      throw new Error(`Invalid config: cacheAuthorizedRequests must be a boolean`);
+    }
+    if (typeof config.cacheGetTimeoutInMs !== 'number') {
+      throw new Error(`Invalid config: cacheGetTimeoutInMs must be a number`);
+    }
+    if (config.hashCacheKey) {
+      if (typeof config.hashCacheKey !== 'string') {
+        throw new Error(`Invalid config: hashCacheKey must be a string if defined`);
+      }
+      const algList = crypto.getHashes();
+      if (!algList.includes(config.hashCacheKey)) {
+        throw new Error (`NotImplementedError: ${config.hashCacheKey} is not implemented by nodejs crypto`);
+      }
+    }
+    if (typeof config.initCacheTimeoutInMs !== 'number') {
+      throw new Error(`Invalid config: initCacheTimeoutInMs must be a number`);
+    }
+    if (typeof config.auth !== 'string' || !(config.auth === 'after' || config.auth === 'before')) {
+      throw new Error(`Invalid config: auth must be either before or after`);
+    }
+  },
+};

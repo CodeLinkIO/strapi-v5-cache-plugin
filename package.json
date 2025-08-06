@@ -1,0 +1,90 @@
+{
+  "version": "1.5.1",
+  "keywords": [
+    "strapi cache",
+    "strapi rest cache",
+    "strapi 5 cache",
+    "strapi v5 cache plugin"
+  ],
+  "type": "commonjs",
+  "exports": {
+    "./package.json": "./package.json",
+    "./strapi-admin": {
+      "types": "./dist/admin/src/index.d.ts",
+      "source": "./admin/src/index.ts",
+      "import": "./dist/admin/index.mjs",
+      "require": "./dist/admin/index.js",
+      "default": "./dist/admin/index.js"
+    },
+    "./strapi-server": {
+      "types": "./dist/server/src/index.d.ts",
+      "source": "./server/src/index.ts",
+      "import": "./dist/server/index.mjs",
+      "require": "./dist/server/index.js",
+      "default": "./dist/server/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepare": "strapi-plugin build",
+    "build": "strapi-plugin build",
+    "watch": "strapi-plugin watch",
+    "watch:link": "strapi-plugin watch:link",
+    "verify": "strapi-plugin verify",
+    "test:ts:front": "run -T tsc -p admin/tsconfig.json",
+    "test:ts:back": "run -T tsc -p server/tsconfig.json",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@strapi/design-system": "^2.0.0-rc.23",
+    "@strapi/icons": "^2.0.0-rc.23",
+    "fast-json-stable-stringify": "^2.1.0",
+    "graphql": "^16.11.0",
+    "ioredis": "^5.6.1",
+    "jsonwebtoken": "^9.0.2",
+    "lru-cache": "^11.1.0",
+    "querystringify": "^2.2.0",
+    "raw-body": "^3.0.0",
+    "react-intl": "^7.1.10"
+  },
+  "devDependencies": {
+    "@strapi/sdk-plugin": "^5.3.2",
+    "@strapi/strapi": "^5.0.0",
+    "@strapi/typescript-utils": "^5.0.0",
+    "@types/koa": "^2.15.0",
+    "@types/querystringify": "^2.0.2",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.1",
+    "prettier": "^3.5.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.0",
+    "styled-components": "^6.1.17",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.1"
+  },
+  "peerDependencies": {
+    "@strapi/sdk-plugin": "^5.3.2",
+    "@strapi/strapi": "^5.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.0",
+    "styled-components": "^6.1.17"
+  },
+  "strapi": {
+    "kind": "plugin",
+    "name": "strapi-cache",
+    "displayName": "Strapi Cache",
+    "description": "A LRU-Cache plugin for strapi v5"
+  },
+  "name": "strapi-cache",
+  "description": "A LRU-Cache plugin for strapi v5",
+  "license": "MIT",
+  "author": "TupiC <christoph.tupi@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TupiC/strapi-cache.git"
+  }
+}
