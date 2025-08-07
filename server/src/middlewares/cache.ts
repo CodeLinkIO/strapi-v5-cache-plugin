@@ -67,6 +67,12 @@ const middleware = async (ctx: Context, next: any) => {
           const contentEncoding = ctx.response.headers['content-encoding']; // e.g., gzip, br, deflate
           const decompressed = await decompressBuffer(buf, contentEncoding);
           const responseText = decodeBufferToText(decompressed);
+          loggy.info('Stream');
+          loggy.info(JSON.stringify({
+            status: ctx.status,
+            body: responseText,
+            headers: headersToStore,
+          }));
           await cacheStore.set(key, {
             status: ctx.status,
             body: responseText,
@@ -74,6 +80,12 @@ const middleware = async (ctx: Context, next: any) => {
           });
           ctx.body = buf;
         } else {
+          loggy.info('Not Stream');
+          loggy.info(JSON.stringify({
+            status: ctx.status,
+            body: ctx.body,
+            headers: headersToStore,
+          }));
           await cacheStore.set(key, {
             status: ctx.status,
             body: ctx.body,
