@@ -79,8 +79,7 @@ const middleware = async (ctx: any, next: any) => {
 
     try {
       await next();
-    }
-    catch(e) {
+    } catch (e) {
       cacheStore.del(key);
       throw e;
     }
@@ -97,10 +96,15 @@ const middleware = async (ctx: any, next: any) => {
           const contentEncoding = ctx.response.headers['content-encoding']; // e.g., gzip, br, deflate
           const decompressed = await decompressBuffer(buf, contentEncoding);
           const responseText = decodeBufferToText(decompressed);
-          await cacheStore.set(key, { body: responseText, headers: headersToStore });
+          await cacheStore.set(key, {
+            status: ctx.status,
+            body: responseText,
+            headers: headersToStore,
+          });
           ctx.body = buf;
         } else {
           await cacheStore.set(key, {
+            status: ctx.status,
             body: ctx.body,
             headers: headersToStore,
           });
