@@ -33,7 +33,7 @@ export async function invalidateCache(
     const promises = [cacheStore.clearByRegexp([regex])];
     if (cloudFrontStore?.ready && !!documentId) {
       const pathToInvalidate = `${apiPath}/${documentId}*`;
-      promises.push(cloudFrontStore.invalidatePaths([pathToInvalidate]));
+      cloudFrontStore.queueInvalidations([pathToInvalidate]);
     }
     await Promise.allSettled(promises);
 
