@@ -1,27 +1,34 @@
 import type { Core } from '@strapi/strapi';
 import { invalidateCache, invalidateGraphqlCache } from './utils/invalidateCache';
-import { CacheService } from './types/cache.types';
+import { CacheService, CloudFrontService } from './types/cache.types';
 import { loggy } from './utils/log';
 import { actions } from './permissions';
 
 const bootstrap = ({ strapi }: { strapi: Core.Strapi }) => {
   loggy.info('Initializing');
   try {
+    // Cache
     const cacheService = strapi.plugin('strapi-cache').services.service as CacheService;
     const cacheStore = cacheService.getCacheInstance();
     cacheStore.init();
 
+    // CloudFront
+    const cloudFrontService = strapi.plugin('strapi-cache').services
+      .cloudFrontService as CloudFrontService;
+    const cloudFrontStore = cloudFrontService.getCloudFrontInstance();
+    cloudFrontStore.init();
+
     strapi.db.lifecycles.subscribe({
       async afterCreate(event) {
-        await invalidateCache(event, cacheStore, strapi);
+        await invalidateCache(event, { cacheStore, cloudFrontStore }, strapi);
         await invalidateGraphqlCache(event, cacheStore, strapi);
       },
       async afterUpdate(event) {
-        await invalidateCache(event, cacheStore, strapi);
+        await invalidateCache(event, { cacheStore, cloudFrontStore }, strapi);
         await invalidateGraphqlCache(event, cacheStore, strapi);
       },
       async afterDelete(event) {
-        await invalidateCache(event, cacheStore, strapi);
+        await invalidateCache(event, { cacheStore, cloudFrontStore }, strapi);
         await invalidateGraphqlCache(event, cacheStore, strapi);
       },
     });

@@ -1,8 +1,15 @@
 import { Core } from '@strapi/strapi';
-import { CacheProvider } from 'src/types/cache.types';
+import { CacheProvider, CloudFrontProvider } from 'src/types/cache.types';
 import { loggy } from './log';
 
-export async function invalidateCache(event: any, cacheStore: CacheProvider, strapi: Core.Strapi) {
+export async function invalidateCache(
+  event: any,
+  {
+    cacheStore,
+    cloudFrontStore,
+  }: { cacheStore: CacheProvider; cloudFrontStore?: CloudFrontProvider },
+  strapi: Core.Strapi
+) {
   const { model } = event;
   const uid = model.uid;
 
@@ -21,7 +28,12 @@ export async function invalidateCache(event: any, cacheStore: CacheProvider, str
     const apiPath = `/api/${pluralName}`;
     const regex = new RegExp(`^.*:${apiPath}(/.*)?(\\?.*)?(:.*)?$`);
 
-    await cacheStore.clearByRegexp([regex]);
+    const promises = [cacheStore.clearByRegexp([regex])];
+    if (cloudFrontStore?.ready) {
+      promises.push(cloudFrontStore.invalidatePaths([apiPath]));
+    }
+    Promise.allSettled(promises);
+
     loggy.info(`Invalidated cache for ${apiPath}`);
   } catch (error) {
     loggy.error('Cache invalidation error:');

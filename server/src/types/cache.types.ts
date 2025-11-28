@@ -15,6 +15,17 @@ export interface CacheService {
   getCacheInstance(): CacheProvider;
 }
 
+export interface CloudFrontProvider {
+  init(): void;
+  readonly ready: boolean;
+  invalidatePaths(paths: string[]): Promise<any | null>;
+}
+
+export interface CloudFrontService {
+  // CloudFront is not always available
+  getCloudFrontInstance(): CloudFrontProvider | null;
+}
+
 export interface CacheInstance {
   initialized: boolean;
   provider: LRUCache<string, any>;
