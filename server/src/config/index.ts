@@ -18,8 +18,18 @@ export default {
     hashCacheKey: undefined,
     initCacheTimeoutInMs: 10000,
     auth: 'after',
+    cloudFrontAwsRegion: undefined,
+    cloudFrontDistributionId: undefined,
   }),
   validator: (config) => {
+    if (!!config.cloudFrontAwsRegion && typeof config.cloudFrontAwsRegion !== 'string') {
+      throw new Error(`Invalid config: cloudFrontAwsRegion must be a string`);
+    }
+
+    if (!!config.cloudFrontDistributionId && typeof config.cloudFrontDistributionId !== 'string') {
+      throw new Error(`Invalid config: cloudFrontDistributionId must be a string`);
+    }
+
     if (typeof config.debug !== 'boolean') {
       throw new Error(`Invalid config: debug must be a boolean`);
     }
@@ -48,14 +58,19 @@ export default {
       throw new Error(`Invalid config: provider must be 'memory' or 'redis'`);
     }
     if (config.provider === 'redis') {
-      if (!config.redisConfig &&
-      (typeof config.redisConfig !== 'string' || typeof config.redisConfig !== 'object')) {
+      if (
+        !config.redisConfig &&
+        (typeof config.redisConfig !== 'string' || typeof config.redisConfig !== 'object')
+      ) {
         throw new Error(`Invalid config: redisConfig must be set when using redis provider`);
       }
-      if (!Array.isArray(config.redisClusterNodes) ||
-        config.redisClusterNodes.some((item) =>
-          !('host' in item && 'port' in item))) {
-        throw new Error(`Invalid config: redisClusterNodes must be as a list of objects with keys 'host' and 'port'`);
+      if (
+        !Array.isArray(config.redisClusterNodes) ||
+        config.redisClusterNodes.some((item) => !('host' in item && 'port' in item))
+      ) {
+        throw new Error(
+          `Invalid config: redisClusterNodes must be as a list of objects with keys 'host' and 'port'`
+        );
       }
       if (typeof config.redisClusterOptions !== 'object') {
         throw new Error(`Invalid config: redisClusterOptions must be an object`);
@@ -76,7 +91,9 @@ export default {
       }
       const algList = crypto.getHashes();
       if (!algList.includes(config.hashCacheKey)) {
-        throw new Error (`NotImplementedError: ${config.hashCacheKey} is not implemented by nodejs crypto`);
+        throw new Error(
+          `NotImplementedError: ${config.hashCacheKey} is not implemented by nodejs crypto`
+        );
       }
     }
     if (typeof config.initCacheTimeoutInMs !== 'number') {
