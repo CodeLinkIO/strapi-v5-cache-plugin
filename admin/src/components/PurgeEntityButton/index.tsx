@@ -17,6 +17,7 @@ function PurgeEntityButton() {
         id: 'strapi-cache.cache.purge.entity',
         defaultMessage: 'Purge Entity Cache',
       })}
+      pathToInvalidate={keyToUse ? `/api/${contentTypeName}/${keyToUse}*` : undefined}
       keyToUse={keyToUse}
       contentTypeName={contentTypeName}
     ></PurgeModal>
