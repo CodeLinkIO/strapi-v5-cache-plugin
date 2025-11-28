@@ -13,9 +13,16 @@ export type PurgeProps = {
   buttonWidth?: string;
   keyToUse?: string;
   contentTypeName?: string;
+  pathToInvalidate?: string;
 };
 
-function PurgeModal({ buttonText, keyToUse, buttonWidth, contentTypeName }: PurgeProps) {
+function PurgeModal({
+  buttonText,
+  keyToUse,
+  buttonWidth,
+  contentTypeName,
+  pathToInvalidate,
+}: PurgeProps) {
   const { allowedActions } = useRBAC(pluginPermissions);
   const formatMessage = useIntl().formatMessage;
   const { post, get } = useFetchClient();
@@ -53,23 +60,18 @@ function PurgeModal({ buttonText, keyToUse, buttonWidth, contentTypeName }: Purg
     );
   };
 
-  const clearCache = () => {
-    if (!keyToUse) {
-      toggleNotification({
-        type: 'warning',
-        message: formatMessage({
-          id: 'strapi-cache.cache.purge.no-content-type',
-          defaultMessage: 'No content type found',
-        }),
-      });
-      return;
-    }
-
-    post(`/strapi-cache/purge-cache/${keyToUse}`, undefined, {
-      headers: {
-        'Content-Type': 'application/json',
+  const purgeCache = ({ key, path }: { key: string; path?: string }) => {
+    post(
+      `/strapi-cache/purge-cache/${key}`,
+      {
+        path,
       },
-    })
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
       .then(() => {
         toggleNotification({
           type: 'success',
@@ -79,7 +81,7 @@ function PurgeModal({ buttonText, keyToUse, buttonWidth, contentTypeName }: Purg
               defaultMessage: 'Cache purged successfully',
             },
             {
-              key: `"${keyToUse}"`,
+              key: `"${key}"`,
             }
           ),
         });
@@ -93,11 +95,26 @@ function PurgeModal({ buttonText, keyToUse, buttonWidth, contentTypeName }: Purg
               defaultMessage: 'Error purging cache',
             },
             {
-              key: `"${keyToUse}"`,
+              key: `"${key}"`,
             }
           ),
         });
       });
+  };
+
+  const clearCache = () => {
+    if (!keyToUse) {
+      toggleNotification({
+        type: 'warning',
+        message: formatMessage({
+          id: 'strapi-cache.cache.purge.no-content-type',
+          defaultMessage: 'No content type found',
+        }),
+      });
+      return;
+    }
+
+    purgeCache({ key: keyToUse, path: pathToInvalidate });
   };
 
   if (!allowedActions.canPurgeCache || !isCacheableRoute()) {

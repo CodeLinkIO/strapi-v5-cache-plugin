@@ -28,11 +28,14 @@ export async function invalidateCache(
     const apiPath = `/api/${pluralName}`;
     const regex = new RegExp(`^.*:${apiPath}(/.*)?(\\?.*)?(:.*)?$`);
 
+    const documentId = event?.result?.documentId;
+
     const promises = [cacheStore.clearByRegexp([regex])];
-    if (cloudFrontStore?.ready) {
-      promises.push(cloudFrontStore.invalidatePaths([apiPath]));
+    if (cloudFrontStore?.ready && !!documentId) {
+      const pathToInvalidate = `${apiPath}/${documentId}*`;
+      promises.push(cloudFrontStore.invalidatePaths([pathToInvalidate]));
     }
-    Promise.allSettled(promises);
+    await Promise.allSettled(promises);
 
     loggy.info(`Invalidated cache for ${apiPath}`);
   } catch (error) {
