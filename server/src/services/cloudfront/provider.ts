@@ -17,10 +17,15 @@ export class CloudFrontProvider implements ICloudFrontProvider {
   private batcher: Batcher<string>;
 
   constructor(private strapi: Core.Strapi) {
-    this.batcher = new Batcher<string>(this.invalidatePaths, {
-      maxSize: 10,
-      wait: 5000,
-    });
+    this.batcher = new Batcher<string>(
+      (items) => {
+        this.invalidatePaths(items);
+      },
+      {
+        maxSize: 10,
+        wait: 5000,
+      }
+    );
   }
   queueInvalidations(paths: string[]): void {
     paths.forEach((path) => this.batcher.addItem(path));
