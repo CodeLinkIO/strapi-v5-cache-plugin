@@ -64,14 +64,15 @@ export class CloudFrontProvider implements ICloudFrontProvider {
 
   async invalidatePaths(paths: string[]): Promise<void> {
     const cloudFrontCallerReference = this.createCloudFrontCallerReference();
+    const cloudFrontPaths = Array.from(new Set(paths));
 
     const createInvalidationCommand = new CreateInvalidationCommand({
       DistributionId: this.distributionId,
       InvalidationBatch: {
         CallerReference: cloudFrontCallerReference,
         Paths: {
-          Quantity: paths.length,
-          Items: paths,
+          Quantity: cloudFrontPaths.length,
+          Items: cloudFrontPaths,
         },
       },
     });
