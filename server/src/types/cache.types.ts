@@ -18,7 +18,8 @@ export interface CacheService {
 export interface CloudFrontProvider {
   init(): void;
   readonly ready: boolean;
-  invalidatePaths(paths: string[]): Promise<any | null>;
+  invalidatePaths(paths: string[]): Promise<void>;
+  queueInvalidations(paths: string[]): void;
 }
 
 export interface CloudFrontService {

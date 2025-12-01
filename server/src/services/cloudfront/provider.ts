@@ -6,6 +6,7 @@ import {
 import type { Core } from '@strapi/strapi';
 import { CloudFrontProvider as ICloudFrontProvider } from '../../types/cache.types';
 import { loggy } from '../../utils/log';
+import { Batcher } from '@tanstack/pacer';
 
 export class CloudFrontProvider implements ICloudFrontProvider {
   private cloudFrontClient: CloudFrontClient | null = null;
@@ -13,7 +14,17 @@ export class CloudFrontProvider implements ICloudFrontProvider {
 
   private initialized = false;
 
-  constructor(private strapi: Core.Strapi) {}
+  private batcher: Batcher<string>;
+
+  constructor(private strapi: Core.Strapi) {
+    this.batcher = new Batcher<string>(this.invalidatePaths, {
+      maxSize: 10,
+      wait: 5000,
+    });
+  }
+  queueInvalidations(paths: string[]): void {
+    paths.forEach((path) => this.batcher.addItem(path));
+  }
 
   public init(): void {
     if (this.initialized) {
@@ -51,23 +62,23 @@ export class CloudFrontProvider implements ICloudFrontProvider {
     return `invalidate-${Date.now()}`;
   }
 
-  async invalidatePaths(paths: string[]): Promise<any | null> {
+  async invalidatePaths(paths: string[]): Promise<void> {
     const cloudFrontCallerReference = this.createCloudFrontCallerReference();
+    const cloudFrontPaths = Array.from(new Set(paths));
 
     const createInvalidationCommand = new CreateInvalidationCommand({
       DistributionId: this.distributionId,
       InvalidationBatch: {
         CallerReference: cloudFrontCallerReference,
         Paths: {
-          Quantity: paths.length,
-          Items: paths,
+          Quantity: cloudFrontPaths.length,
+          Items: cloudFrontPaths,
         },
       },
     });
     try {
       const result = await this.cloudFrontClient.send(createInvalidationCommand);
       loggy.info(`CloudFront invalidation created: ${JSON.stringify(result)}`);
-      return result;
     } catch (e) {
       loggy.error(`Error creating CloudFront invalidation: ${e}`);
     }
