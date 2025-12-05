@@ -14,7 +14,7 @@ function PurgeCacheButton() {
         defaultMessage: 'Purge Cache',
       })}
       keyToUse={keyToUse}
-      pathToInvalidate={keyToUse ? `/api/${keyToUse}/*` : undefined}
+      pathToInvalidate={keyToUse ? `/api/${keyToUse}*` : undefined}
     ></PurgeModal>
   );
 }
