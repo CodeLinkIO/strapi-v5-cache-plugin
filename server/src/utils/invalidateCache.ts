@@ -2,6 +2,28 @@ import { Core } from '@strapi/strapi';
 import { CacheProvider, CloudFrontProvider } from 'src/types/cache.types';
 import { loggy } from './log';
 
+const BASE_API_PATH = '/api';
+
+const getCloudFrontPathToInvalidate = ({
+  documentId,
+  isSingleType,
+  contentName,
+}: {
+  documentId?: string;
+  isSingleType: boolean;
+  contentName: string;
+}): `${typeof BASE_API_PATH}/${string}*` | null => {
+  if (isSingleType) {
+    return `${BASE_API_PATH}/${contentName}*`;
+  }
+
+  if (documentId) {
+    return `${BASE_API_PATH}/${contentName}/${documentId}*`;
+  }
+
+  return null;
+};
+
 export async function invalidateCache(
   event: any,
   {
@@ -20,20 +42,24 @@ export async function invalidateCache(
       loggy.info(`Content type ${uid} not found`);
       return;
     }
-
-    const pluralName =
-      contentType.kind === 'singleType'
-        ? contentType.info.singularName
-        : contentType.info.pluralName;
-    const apiPath = `/api/${pluralName}`;
+    const isSingleType = contentType.kind === 'singleType';
+    const contentName = isSingleType ? contentType.info.singularName : contentType.info.pluralName;
+    const apiPath = `${BASE_API_PATH}/${contentName}` as const;
     const regex = new RegExp(`^.*:${apiPath}(/.*)?(\\?.*)?(:.*)?$`);
 
     const documentId = event?.result?.documentId;
 
     const promises = [cacheStore.clearByRegexp([regex])];
-    if (cloudFrontStore?.ready && !!documentId) {
-      const pathToInvalidate = `${apiPath}/${documentId}*`;
-      cloudFrontStore.queueInvalidations([pathToInvalidate]);
+    if (cloudFrontStore?.ready) {
+      const pathToInvalidate = getCloudFrontPathToInvalidate({
+        documentId,
+        isSingleType,
+        contentName,
+      });
+
+      if (pathToInvalidate) {
+        cloudFrontStore.queueInvalidations([pathToInvalidate]);
+      }
     }
     await Promise.allSettled(promises);
 
