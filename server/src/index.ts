@@ -15,6 +15,10 @@ import policies from './policies';
 import routes from './routes';
 import services from './services';
 
+import type { CloudFrontProvider } from './services/cloudfront/provider';
+import type { RedisCacheProvider } from './services/redis/provider';
+export type { CloudFrontProvider, RedisCacheProvider };
+
 export default {
   register,
   bootstrap,
