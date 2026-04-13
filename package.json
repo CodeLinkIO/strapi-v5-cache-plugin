@@ -89,5 +89,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/TupiC/strapi-cache.git"
+  },
+  "resolutions": {
+    "axios": "1.15.0"
   }
 }
