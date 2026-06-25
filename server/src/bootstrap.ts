@@ -44,6 +44,7 @@ const bootstrap = ({ strapi }: { strapi: Core.Strapi }) => {
   loggy.info('Plugin initialized');
 
   strapi.admin.services.permission.actionProvider.registerMany(actions);
+  loggy.info('Plugin registered');
 };
 
 export default bootstrap;
