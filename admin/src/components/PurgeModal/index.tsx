@@ -30,7 +30,12 @@ function PurgeModal({
   const [cacheableRoutes, setCacheableRoutes] = useState<string[]>();
 
   useEffect(() => {
+    console.log('[Strapi Cache] [RBAC] ', JSON.stringify(allowedActions));
+  }, [allowedActions]);
+
+  useEffect(() => {
     if (!allowedActions.canPurgeCache) {
+      console.warn('[Strapi Cache] [RBAC error] no canPurgeCache permission');
       return;
     }
     const fetchCacheableRoutes = async () => {
@@ -49,6 +54,10 @@ function PurgeModal({
 
   const isCacheableRoute = () => {
     if (!keyToUse || !cacheableRoutes) {
+      console.warn('[Strapi Cache] [RBAC error] isCacheableRoute false', {
+        keyToUse,
+        cacheableRoutes,
+      });
       return false;
     }
 
