@@ -2,7 +2,6 @@ import type { Core } from '@strapi/strapi';
 import { invalidateCache, invalidateGraphqlCache } from './utils/invalidateCache';
 import { CacheService, CloudFrontService } from './types/cache.types';
 import { loggy } from './utils/log';
-import { actions } from './permissions';
 
 const bootstrap = ({ strapi }: { strapi: Core.Strapi }) => {
   loggy.info('Initializing');
@@ -42,13 +41,6 @@ const bootstrap = ({ strapi }: { strapi: Core.Strapi }) => {
     return;
   }
   loggy.info('Plugin initialized');
-
-  try {
-    strapi.service('admin::permission').actionProvider.registerMany(actions);
-    loggy.info('Plugin registered');
-  } catch (e) {
-    loggy.error('Plugin could not be registered: ' + JSON.stringify(e));
-  }
 };
 
 export default bootstrap;

@@ -1,8 +1,16 @@
 import type { Core } from '@strapi/strapi';
 import middlewares from './middlewares';
 import { loggy } from './utils/log';
+import { actions } from './permissions';
 
 const register = ({ strapi }: { strapi: Core.Strapi }) => {
+  try {
+    strapi.service('admin::permission').actionProvider.registerMany(actions);
+    loggy.info('Permissions registered');
+  } catch (e) {
+    loggy.error('Could not register permissions: ' + JSON.stringify(e));
+  }
+
   const auth = strapi.plugin('strapi-cache').config('auth') as string;
   // register route middleware so auth run before (https://github.com/strapi/strapi/blob/main/packages/core/core/src/services/server/compose-endpoint.ts#L85-L93)
   if (auth === 'before') {
