@@ -40,3 +40,10 @@ export async function getCacheEntry(
 export function statusIsCachable(ctx) {
   return (ctx.status >= 200 && ctx.status < 300) || ctx.status === 404;
 }
+
+// A controller opts a single response out of the cache with
+// `Cache-Control: no-store`. The request-side `no-cache` bypass is separate.
+export function responseIsCachable(ctx) {
+  const cacheControl = String(ctx.response.get('Cache-Control') ?? '').toLowerCase();
+  return statusIsCachable(ctx) && !cacheControl.includes('no-store');
+}
