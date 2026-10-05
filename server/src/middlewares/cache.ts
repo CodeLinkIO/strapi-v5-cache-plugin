@@ -4,7 +4,7 @@ import { CacheService } from '../../src/types/cache.types';
 import { loggy } from '../utils/log';
 import Stream from 'stream';
 import { decodeBufferToText, decompressBuffer, streamToBuffer } from '../utils/body';
-import { getCacheEntry, statusIsCachable } from '../utils/cache';
+import { getCacheEntry, responseIsCachable } from '../utils/cache';
 import { qsparse } from '../utils/qsparse';
 
 const middleware = async (ctx: Context, next: any) => {
@@ -56,7 +56,7 @@ const middleware = async (ctx: Context, next: any) => {
     }
 
     try {
-      if (statusIsCachable(ctx)) {
+      if (responseIsCachable(ctx)) {
         loggy.info(`MISS with key: ${key}`);
         const headersToStore = cacheHeaders ? ctx.response.headers : null;
         if (authorizationHeader && headersToStore && headersToStore.authorization) {
