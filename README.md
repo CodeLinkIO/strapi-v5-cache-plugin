@@ -64,6 +64,14 @@ In your Strapi project, navigate to `config/plugins.js` and add the following co
 },
 ```
 
+### Per-key TTL
+
+The cache provider's `set` accepts an optional third argument `{ ttlMs }` that overrides the global `ttl` for that key (both providers). Without it, the global `ttl` applies.
+
+```javascript
+await strapi.plugin('strapi-cache').service('service').getCacheInstance().set(key, value, { ttlMs: 30_000 });
+```
+
 ## 🔍 Routes
 
 The plugin creates three new routes

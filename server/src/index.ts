@@ -17,7 +17,8 @@ import services from './services';
 
 import type { CloudFrontProvider } from './services/cloudfront/provider';
 import type { RedisCacheProvider } from './services/redis/provider';
-export type { CloudFrontProvider, RedisCacheProvider };
+import type { CacheProvider, CacheSetOptions } from './types/cache.types';
+export type { CloudFrontProvider, RedisCacheProvider, CacheProvider, CacheSetOptions };
 
 export default {
   register,

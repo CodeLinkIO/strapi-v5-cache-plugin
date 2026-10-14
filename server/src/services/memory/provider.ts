@@ -1,7 +1,7 @@
 import type { Core } from '@strapi/strapi';
 import { LRUCache } from 'lru-cache';
 import { withTimeout } from '../../utils/withTimeout';
-import { CacheProvider, CacheService } from '../../types/cache.types';
+import { CacheProvider, CacheService, CacheSetOptions } from '../../types/cache.types';
 import { loggy } from '../../utils/log';
 
 export class InMemoryCacheProvider implements CacheProvider {
@@ -62,10 +62,17 @@ export class InMemoryCacheProvider implements CacheProvider {
     });
   }
 
-  async set(key: string, val: any): Promise<any | null> {
+  async set(key: string, val: any, options?: CacheSetOptions): Promise<any | null> {
     if (!this.ready) return null;
 
     try {
+      const keyTtlInMs = Number(options?.ttlMs);
+      // lru-cache (>=11) enables ttl tracking lazily on the first per-item ttl,
+      // so this works even if the cache was created without a ttl. Without
+      // ttlAutopurge, expired items are only evicted on access or capacity pressure.
+      if (Number.isFinite(keyTtlInMs) && keyTtlInMs > 0) {
+        return this.provider.set(key, val, { ttl: keyTtlInMs });
+      }
       return this.provider.set(key, val);
     } catch (error) {
       loggy.error(`Error during set: ${error}`);
