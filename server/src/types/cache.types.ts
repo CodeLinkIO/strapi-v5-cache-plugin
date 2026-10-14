@@ -1,9 +1,14 @@
 import type { LRUCache } from 'lru-cache';
 
+export interface CacheSetOptions {
+  /** Per-key time to live in milliseconds. Defaults to the plugin-wide `ttl` config. */
+  ttlMs?: number;
+}
+
 export interface CacheProvider {
   init(): void;
   get(key: string): Promise<any | null>;
-  set(key: string, val: any): Promise<any | null>;
+  set(key: string, val: any, options?: CacheSetOptions): Promise<any | null>;
   del(key: string): Promise<any | null>;
   keys(): Promise<string[] | null>;
   reset(): Promise<any | null>;

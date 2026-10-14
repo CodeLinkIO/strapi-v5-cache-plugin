@@ -1,7 +1,7 @@
 import type { Core } from '@strapi/strapi';
 import { Redis, Cluster, ClusterNode, ClusterOptions } from 'ioredis';
 import { withTimeout } from '../../utils/withTimeout';
-import { CacheProvider } from '../../types/cache.types';
+import { CacheProvider, CacheSetOptions } from '../../types/cache.types';
 import { loggy } from '../../utils/log';
 
 export class RedisCacheProvider implements CacheProvider {
@@ -62,12 +62,16 @@ export class RedisCacheProvider implements CacheProvider {
       });
   }
 
-  async set(key: string, val: any): Promise<any | null> {
+  async set(key: string, val: any, options?: CacheSetOptions): Promise<any | null> {
     if (!this.ready) return null;
 
     try {
       // plugin ttl is ms, ioredis ttl is s, so we convert here
-      const ttlInMs = Number(this.strapi.plugin('strapi-cache').config('ttl'));
+      const keyTtlInMs = Number(options?.ttlMs);
+      const ttlInMs =
+        Number.isFinite(keyTtlInMs) && keyTtlInMs > 0
+          ? keyTtlInMs
+          : Number(this.strapi.plugin('strapi-cache').config('ttl'));
       const ttlInS = Number((ttlInMs/1000).toFixed());
       const serialized = JSON.stringify(val);
       if (ttlInS > 0) {
